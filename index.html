@@ -1,0 +1,508 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PixelDesk — Your Space</title>
+<style>
+:root{--accent:#a78bfa;--glass:rgba(255,255,255,.13);--line:rgba(255,255,255,.22)}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,"Segoe UI",sans-serif;color:white;min-height:100vh;background:linear-gradient(135deg,#17152f,#493b87,#db83b6);background-attachment:fixed}
+button,input,textarea{font:inherit}
+button{cursor:pointer;color:inherit}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid white}
+#desktop{min-height:100vh;padding:24px 25px 105px;max-width:1500px;margin:auto}
+.glass{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 10px 35px #00000014}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{font-weight:850;font-size:21px;letter-spacing:-.7px}.brand span{color:#e9d5ff}
+.top-actions{display:flex;gap:8px;align-items:center}
+.pill,.btn{border:1px solid var(--line);background:var(--glass);border-radius:13px;padding:10px 13px;color:white;transition:.2s}
+.btn:hover,.pill:hover,.dock-item:hover{background:#ffffff28;transform:translateY(-2px)}
+.hero{margin:35px 0 22px;max-width:850px}
+.eyebrow{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#ffffffbd}
+h1{font-size:clamp(29px,4.6vw,52px);letter-spacing:-1.8px;line-height:1.16;margin:10px 0;overflow-wrap:anywhere}
+#quoteAuthor{color:#ffffffbd;font-size:15px;margin:12px 0}
+.search-card{max-width:850px;padding:12px 15px;border-radius:18px;margin-bottom:26px}
+.search-form{display:flex;gap:10px;align-items:center}
+.search-form input{flex:1;min-width:0;background:transparent;border:0;outline:none;color:white;padding:10px;font-size:15px}
+.search-form input::placeholder{color:#ffffffa8}
+.search-shortcuts{display:flex;gap:8px;flex-wrap:wrap;padding:9px 0 0 34px}
+.search-shortcuts button{border:0;border-radius:9px;padding:6px 9px;background:#ffffff12;color:#ffffffcc;font-size:12px}
+#workspace{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;align-items:start}
+.widget{border-radius:22px;padding:18px;min-width:0;overflow:hidden;animation:appear .25s ease}
+.wide{grid-column:span 2}.full{grid-column:span 4}
+@keyframes appear{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.widget-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:14px}
+.widget-title{font-size:14px;font-weight:750}
+.small-action{border:0;background:transparent;color:#ffffffb8;padding:4px;font-size:18px}
+.muted{color:#ffffffb8;font-size:13px}
+.clock{font-size:clamp(29px,3.5vw,45px);font-weight:750;letter-spacing:-2px;font-variant-numeric:tabular-nums}
+.date{color:#ffffffb8;font-size:13px;margin-top:5px}
+.progress{height:5px;background:#ffffff28;border-radius:9px;overflow:hidden;margin-top:12px}
+.progress span{height:100%;display:block;background:white;border-radius:9px;transition:width .2s}
+.notes{width:100%;min-height:120px;resize:vertical;background:transparent;border:0;color:white;outline:none;line-height:1.55}
+.notes::placeholder{color:#ffffff91}
+.shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.shortcut{min-width:0;text-align:center;border:0;background:transparent;color:white;padding:7px 3px;border-radius:14px}
+.shortcut:hover{background:#ffffff19}
+.app-icon{display:grid;place-items:center;width:48px;height:48px;margin:0 auto 8px;border-radius:16px;background:#ffffff20;border:1px solid #ffffff25;font-size:23px}
+.shortcut-name{display:block;font-size:11px;overflow-wrap:anywhere}
+.music-art{height:100px;border-radius:16px;background:linear-gradient(135deg,#f9a8d4,#a78bfa,#818cf8);display:grid;place-items:center;font-size:42px;margin-bottom:13px}
+.music-controls{display:flex;justify-content:center;gap:12px;align-items:center;margin-top:12px}
+.music-controls button{border:0;background:#ffffff1d;border-radius:50%;width:38px;height:38px;font-size:17px}
+.music-controls .play{background:white;color:#44356e;width:46px;height:46px}
+.gameboard{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:225px;margin:12px auto}
+.cell{aspect-ratio:1;border:1px solid #ffffff35;background:#ffffff12;border-radius:12px;font-size:30px;font-weight:700}
+.cell:hover{background:#ffffff25}
+.game-status{text-align:center;min-height:22px;color:#ffffffb8;font-size:13px}
+#dock{position:fixed;z-index:10;bottom:12px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;padding:9px 12px;border-radius:22px;max-width:calc(100vw - 24px)}
+.dock-item{border:1px solid transparent;background:transparent;border-radius:14px;width:45px;height:45px;font-size:22px;flex-shrink:0;transition:.18s}
+.dock-divider{height:29px;width:1px;background:#ffffff35;margin:0 3px}
+#panel{display:none;position:fixed;z-index:20;right:15px;top:70px;width:min(380px,calc(100vw - 30px));max-height:calc(100vh - 100px);overflow:auto;border-radius:22px;padding:20px}
+#panel.open{display:block;animation:appear .2s ease}
+.panel-title{font-size:21px;font-weight:750;margin:0 0 5px}
+.panel-section{margin-top:20px}
+.panel-section h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#ffffffb8}
+.wallpapers{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.wallpaper{height:62px;border-radius:13px;border:2px solid transparent}
+.wallpaper.active{border-color:white}
+.field{display:block;width:100%;margin-top:8px;padding:11px;border:1px solid var(--line);background:#ffffff12;color:white;border-radius:12px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row>*{flex:1}
+label{font-size:12px;color:#ffffffc0}
+#widgetToggles label{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:14px;color:white}
+.dialog-bg{display:none;position:fixed;z-index:30;inset:0;background:#08061488;align-items:center;justify-content:center;padding:18px}
+.dialog-bg.open{display:flex}
+.dialog{width:min(530px,100%);max-height:85vh;overflow:auto;padding:24px;border-radius:24px}
+.dialog h2{margin:0 0 18px}
+.close-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.toast{position:fixed;z-index:50;bottom:90px;left:50%;transform:translateX(-50%);background:#17152bef;border:1px solid var(--line);border-radius:14px;padding:12px 18px;opacity:0;pointer-events:none;transition:.25s;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+.footer-hint{color:#ffffff9c;font-size:11px;text-align:center;margin-top:20px}
+@media(max-width:850px){#workspace{grid-template-columns:repeat(2,minmax(0,1fr))}.full{grid-column:span 2}}
+@media(max-width:500px){
+ #desktop{padding:15px 12px 100px}.brand{font-size:17px}.top-actions{gap:5px}.top-actions .pill{padding:8px;font-size:12px}
+ .hero{margin:28px 0 19px}h1{letter-spacing:-1px}
+ #workspace{gap:10px}.widget{padding:13px;border-radius:18px}.wide{grid-column:span 2}
+ .shortcuts{gap:4px}.app-icon{width:40px;height:40px}
+ #dock{gap:2px;padding:7px}.dock-item{width:39px;height:42px;font-size:20px}
+ .search-card{padding:8px}.search-form{gap:5px}.search-form button{padding:9px}
+}
+</style>
+</head>
+<body>
+<div id="desktop">
+<header class="topbar">
+  <div class="brand">✦ Pixel<span>Desk</span></div>
+  <div class="top-actions">
+    <div class="pill" id="topClock">--:--</div>
+    <button class="pill" id="settingsBtn">⚙ Customise</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="eyebrow" id="greeting">YOUR DAILY INSPIRATION</div>
+  <h1 id="welcomeTitle">Believe you can.</h1>
+  <p id="quoteAuthor">A little inspiration to start your day.</p>
+  <button class="pill" id="newQuote">✨ New inspiration</button>
+</section>
+
+<section class="search-card glass">
+  <form class="search-form" id="searchForm">
+    <span style="font-size:21px">🔎</span>
+    <input id="searchInput" type="search" placeholder="Search the web or ask a question..." autocomplete="off" aria-label="Search the web">
+    <button class="pill" type="submit">Search ↗</button>
+  </form>
+  <div class="search-shortcuts">
+    <button type="button" data-search="google">🌐 Google</button>
+    <button type="button" data-search="youtube">▶ YouTube</button>
+    <button type="button" data-search="wikipedia">📚 Wikipedia</button>
+    <button type="button" data-search="images">🖼 Images</button>
+  </div>
+</section>
+
+<main id="workspace">
+  <section class="widget glass" data-widget="clock">
+    <div class="widget-head"><span class="widget-title">🕒 The time</span><span class="muted">LIVE</span></div>
+    <div class="clock" id="bigClock">--:--</div><div class="date" id="bigDate"></div>
+  </section>
+  <section class="widget glass" data-widget="focus">
+    <div class="widget-head"><span class="widget-title">🎯 Daily focus</span><button class="small-action" id="editFocus">✎</button></div>
+    <div id="focusText" style="font-size:19px;font-weight:650">Make something awesome.</div>
+    <div class="muted" style="margin-top:9px" id="focusSub">One step at a time.</div>
+    <div class="progress"><span id="focusProgress" style="width:0%"></span></div>
+    <button class="btn" id="focusDone" style="margin-top:13px;width:100%">✓ Mark complete</button>
+  </section>
+  <section class="widget glass" data-widget="date">
+    <div class="widget-head"><span class="widget-title">📅 Today</span></div>
+    <div style="font-size:32px;font-weight:750" id="dayNumber">--</div>
+    <div class="muted" id="monthName"></div><div class="muted" style="margin-top:10px" id="yearName"></div>
+  </section>
+  <section class="widget glass wide" data-widget="notes">
+    <div class="widget-head"><span class="widget-title">📝 Quick notes</span><span class="muted">Auto-saves</span></div>
+    <textarea class="notes" id="notes" placeholder="Ideas, reminders, plans..."></textarea>
+  </section>
+  <section class="widget glass wide" data-widget="shortcuts">
+    <div class="widget-head"><span class="widget-title">🚀 My shortcuts</span><button class="small-action" id="addShortcut">＋</button></div>
+    <div class="shortcuts" id="shortcuts"></div>
+    <div class="muted" style="margin-top:10px">Click to open · Right-click to edit</div>
+  </section>
+  <section class="widget glass" data-widget="music">
+    <div class="widget-head"><span class="widget-title">🎵 Music corner</span></div>
+    <div class="music-art" id="albumArt">🌈</div>
+    <div id="trackName" style="font-weight:700">Dreams in Colour</div>
+    <div class="muted" id="trackArtist" style="margin-top:4px">PixelDesk Radio</div>
+    <div class="music-controls">
+      <button id="prevTrack" aria-label="Previous track">◀</button>
+      <button class="play" id="playMusic" aria-label="Play or pause">▶</button>
+      <button id="nextTrack" aria-label="Next track">▶|</button>
+    </div>
+    <div class="muted" id="musicStatus" style="text-align:center;margin-top:10px">Load a song from your computer</div>
+    <label for="audioFile" class="btn" style="display:block;text-align:center;margin-top:12px">＋ Load music</label>
+    <input id="audioFile" type="file" accept="audio/*" hidden>
+    <audio id="audio" preload="none"></audio>
+  </section>
+  <section class="widget glass" data-widget="game">
+    <div class="widget-head"><span class="widget-title">🎮 Tic-Tac-Toe</span><button class="small-action" id="resetGame">↻</button></div>
+    <div class="game-status" id="gameStatus">Your turn — X</div>
+    <div class="gameboard" id="gameboard"></div>
+    <div class="muted" style="text-align:center">Play against the computer.</div>
+  </section>
+</main>
+<div class="footer-hint">PIXELDESK · YOUR DESKTOP, YOUR WAY</div>
+</div>
+
+<nav id="dock" class="glass" aria-label="Quick launch">
+  <button class="dock-item" data-app="notes" title="Notes">📝</button>
+  <button class="dock-item" data-app="shortcuts" title="Shortcuts">🚀</button>
+  <button class="dock-item" data-app="game" title="Game">🎮</button>
+  <button class="dock-item" data-app="music" title="Music">🎵</button>
+  <div class="dock-divider"></div>
+  <button class="dock-item" id="addBtn" title="Add shortcut">＋</button>
+  <button class="dock-item" id="dockSettings" title="Customise">⚙</button>
+</nav>
+
+<aside id="panel" class="glass">
+  <div class="close-row"><div><div class="panel-title">Make it yours</div><div class="muted">Customise PixelDesk</div></div><button class="pill" id="closePanel">✕</button></div>
+  <div class="panel-section"><h3>Wallpapers</h3><div class="wallpapers" id="wallpapers"></div>
+    <label for="customColour" style="display:block;margin-top:12px">Custom background colour</label><input class="field" type="color" id="customColour" value="#493b87">
+  </div>
+  <div class="panel-section"><h3>Personalise</h3>
+    <label for="nameInput">Your display name</label><input class="field" id="nameInput" placeholder="Your name">
+    <label for="accentInput" style="display:block;margin-top:12px">Accent colour</label><input class="field" type="color" id="accentInput" value="#a78bfa">
+  </div>
+  <div class="panel-section"><h3>Manage widgets</h3><div id="widgetToggles"></div></div>
+  <div class="panel-section"><h3>Backup</h3>
+    <div class="row"><button class="btn" id="exportLayout">Export backup</button><button class="btn" id="importLayout">Import backup</button></div>
+    <input id="layoutFile" type="file" accept=".json,application/json" hidden>
+    <button class="btn" id="resetLayout" style="width:100%;margin-top:9px">Reset everything</button>
+    <p class="muted">Your settings are saved in this browser.</p>
+  </div>
+</aside>
+
+<div class="dialog-bg" id="dialogBg"><div class="dialog glass">
+  <div class="close-row"><h2 id="dialogTitle">Add shortcut</h2><button class="pill" id="dialogClose">✕</button></div>
+  <div id="dialogContent"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const KEY="pixeldesk_settings_v2";
+const defaults={
+ name:"",wallpaper:0,customColour:"#493b87",accent:"#a78bfa",
+ focus:"Make something awesome.",focusDone:false,notes:"",
+ widgets:{clock:true,focus:true,date:true,notes:true,shortcuts:true,music:true,game:true},
+ shortcuts:[
+  {name:"Wordle Pro",icon:"🟩",url:"https://publisher2015.github.io/Wordle-Pro-/"},
+  {name:"Calculator",icon:"🧮",url:"https://publisher2015.github.io/Calculator-Pro/"},
+  {name:"DeskHub",icon:"🖥️",url:"https://publisher2015.github.io/deskhub/"},
+  {name:"MyChat",icon:"💬",url:"https://publisher2015.github.io/chatime/"}
+ ]
+};
+const wallpapers=[
+ "linear-gradient(135deg,#17152f,#493b87,#db83b6)",
+ "linear-gradient(135deg,#071e26,#087e8b,#8edce6)",
+ "linear-gradient(135deg,#1a102a,#a4508b,#ffb86b)",
+ "linear-gradient(135deg,#101820,#284b63,#84a9ac)",
+ "linear-gradient(135deg,#09203f,#537895,#a5c6d8)",
+ "linear-gradient(135deg,#211522,#5b3758,#cf8ba9)",
+ "linear-gradient(135deg,#101c10,#2c6e49,#a7c957)",
+ "linear-gradient(135deg,#201e50,#5b4bba,#e0c3fc)",
+ "linear-gradient(135deg,#151515,#434343,#a8a8a8)"
+];
+const quotes=[
+ {q:"Believe you can and you're halfway there.",a:"Theodore Roosevelt"},
+ {q:"Great things are done by a series of small things brought together.",a:"Vincent van Gogh"},
+ {q:"It always seems impossible until it's done.",a:"Nelson Mandela"},
+ {q:"The secret of getting ahead is getting started.",a:"Often attributed to Mark Twain"},
+ {q:"Dream big. Start small. Keep going.",a:"PixelDesk inspiration"},
+ {q:"Your future is created by what you do today.",a:"PixelDesk inspiration"},
+ {q:"Every expert was once a beginner.",a:"PixelDesk inspiration"},
+ {q:"Mistakes are proof that you're trying.",a:"PixelDesk inspiration"},
+ {q:"You don't have to be perfect to make progress.",a:"PixelDesk inspiration"},
+ {q:"Be curious. Build things. Never stop learning.",a:"PixelDesk inspiration"},
+ {q:"Small steps every day lead to big changes.",a:"PixelDesk inspiration"},
+ {q:"Difficult roads often lead to beautiful destinations.",a:"PixelDesk inspiration"},
+ {q:"You are capable of more than you know.",a:"PixelDesk inspiration"},
+ {q:"Make today count.",a:"PixelDesk inspiration"},
+ {q:"Success is the sum of small efforts repeated day in and day out.",a:"Robert Collier"},
+ {q:"The only way to do great work is to love what you do.",a:"Steve Jobs"},
+ {q:"Do what you can, with what you have, where you are.",a:"Theodore Roosevelt"},
+ {q:"Nothing will work unless you do.",a:"Maya Angelou"}
+];
+let settings=loadSettings(),toastTimer,lastQuote=-1,trackIndex=0;
+let game=Array(9).fill(""),gameOver=false;
+function clone(v){return JSON.parse(JSON.stringify(v))}
+function loadSettings(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(KEY)||"null");
+  if(!saved)return clone(defaults);
+  return {...clone(defaults),...saved,widgets:{...defaults.widgets,...saved.widgets},shortcuts:Array.isArray(saved.shortcuts)?saved.shortcuts:clone(defaults.shortcuts)};
+ }catch{return clone(defaults)}
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(settings))}catch{toast("Could not save settings in this browser.")}}
+function toast(msg){
+ $("toast").textContent=msg;$("toast").classList.add("show");
+ clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("toast").classList.remove("show"),2400);
+}
+function safeURL(value){
+ try{const u=new URL(value);return ["http:","https:"].includes(u.protocol)?u.href:null}catch{return null}
+}
+function searchWeb(engine,query){
+ const urls={
+  google:"https://www.google.com/search?q=",
+  youtube:"https://www.youtube.com/results?search_query=",
+  wikipedia:"https://en.wikipedia.org/w/index.php?search=",
+  images:"https://www.google.com/search?tbm=isch&q="
+ };
+ const url=urls[engine]||urls.google;
+ window.open(url+encodeURIComponent(query)," _blank".trim(),"noopener,noreferrer");
+}
+$("searchForm").addEventListener("submit",e=>{
+ e.preventDefault();const query=$("searchInput").value.trim();
+ if(!query){$("searchInput").focus();return}
+ searchWeb("google",query);
+});
+document.querySelectorAll("[data-search]").forEach(btn=>btn.addEventListener("click",()=>{
+ const query=$("searchInput").value.trim();
+ if(!query){$("searchInput").focus();toast("Type something to search first.");return}
+ searchWeb(btn.dataset.search,query);
+}));
+function quoteOfDay(){
+ const day=new Date();const stamp=day.getFullYear()*10000+(day.getMonth()+1)*100+day.getDate();
+ return quotes[stamp%quotes.length];
+}
+function displayQuote(item){
+ $("welcomeTitle").textContent="“"+item.q+"”";
+ $("quoteAuthor").textContent="— "+item.a;
+}
+function newQuote(){
+ let index;do{index=Math.floor(Math.random()*quotes.length)}while(index===lastQuote&&quotes.length>1);
+ lastQuote=index;displayQuote(quotes[index]);
+}
+displayQuote(quoteOfDay());
+$("newQuote").addEventListener("click",newQuote);
+function apply(){
+ document.body.style.background=settings.wallpaper===-1?settings.customColour:wallpapers[settings.wallpaper]||wallpapers[0];
+ document.documentElement.style.setProperty("--accent",settings.accent);
+ $("greeting").textContent=settings.name?"WELCOME BACK, "+settings.name.toUpperCase():"YOUR DAILY INSPIRATION";
+ $("notes").value=settings.notes;
+ $("focusText").textContent=settings.focus;
+ $("focusProgress").style.width=settings.focusDone?"100%":"0%";
+ $("focusDone").textContent=settings.focusDone?"✓ Completed — undo":"✓ Mark complete";
+ $("focusSub").textContent=settings.focusDone?"Nice work!":"One step at a time.";
+ document.querySelectorAll("[data-widget]").forEach(el=>el.style.display=settings.widgets[el.dataset.widget]?"":"none");
+ $("nameInput").value=settings.name;$("accentInput").value=settings.accent;$("customColour").value=settings.customColour||"#493b87";
+ renderShortcuts();renderWallpapers();renderWidgetToggles();
+}
+function clock(){
+ const now=new Date(),time=now.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
+ $("topClock").textContent=time;$("bigClock").textContent=time;
+ $("bigDate").textContent=now.toLocaleDateString([],{weekday:"long",month:"long",day:"numeric"});
+ $("dayNumber").textContent=now.getDate();
+ $("monthName").textContent=now.toLocaleDateString([],{month:"long"});
+ $("yearName").textContent=now.toLocaleDateString([],{weekday:"long",year:"numeric"});
+}
+function renderShortcuts(){
+ const root=$("shortcuts");root.replaceChildren();
+ settings.shortcuts.forEach((item,index)=>{
+  const b=document.createElement("button");b.className="shortcut";b.title="Click to open; right-click to edit";
+  const icon=document.createElement("span");icon.className="app-icon";icon.textContent=item.icon||"🔗";
+  const name=document.createElement("span");name.className="shortcut-name";name.textContent=item.name;
+  b.append(icon,name);b.addEventListener("click",()=>openShortcut(index));
+  b.addEventListener("contextmenu",e=>{e.preventDefault();shortcutDialog(index)});
+  root.append(b);
+ });
+ const add=document.createElement("button");add.className="shortcut";
+ const icon=document.createElement("span");icon.className="app-icon";icon.textContent="＋";
+ const label=document.createElement("span");label.className="shortcut-name";label.textContent="Add new";
+ add.append(icon,label);add.addEventListener("click",()=>shortcutDialog(-1));root.append(add);
+}
+function openShortcut(index){
+ const item=settings.shortcuts[index];if(!item)return;
+ const url=safeURL(item.url);if(!url){toast("Invalid website address.");return}
+ window.open(url,"_blank","noopener,noreferrer");
+}
+function renderWallpapers(){
+ const root=$("wallpapers");root.replaceChildren();
+ wallpapers.forEach((wallpaper,index)=>{
+  const b=document.createElement("button");b.className="wallpaper"+(settings.wallpaper===index?" active":"");
+  b.style.background=wallpaper;b.title="Wallpaper "+(index+1);
+  b.addEventListener("click",()=>{settings.wallpaper=index;save();apply()});root.append(b);
+ });
+}
+function renderWidgetToggles(){
+ const root=$("widgetToggles");root.replaceChildren();
+ const labels={clock:"Clock",focus:"Daily focus",date:"Date",notes:"Quick notes",shortcuts:"Shortcuts",music:"Music",game:"Tic-Tac-Toe"};
+ Object.keys(labels).forEach(key=>{
+  const label=document.createElement("label"),span=document.createElement("span"),input=document.createElement("input");
+  span.textContent=labels[key];input.type="checkbox";input.checked=!!settings.widgets[key];
+  input.addEventListener("change",()=>{settings.widgets[key]=input.checked;save();apply()});
+  label.append(span,input);root.append(label);
+ });
+}
+function openPanel(){$("panel").classList.add("open")}
+function closePanel(){$("panel").classList.remove("open")}
+$("settingsBtn").addEventListener("click",openPanel);$("dockSettings").addEventListener("click",openPanel);$("closePanel").addEventListener("click",closePanel);
+$("nameInput").addEventListener("input",e=>{settings.name=e.target.value;save();$("greeting").textContent=settings.name?"WELCOME BACK, "+settings.name.toUpperCase():"YOUR DAILY INSPIRATION"});
+$("accentInput").addEventListener("input",e=>{settings.accent=e.target.value;save();document.documentElement.style.setProperty("--accent",settings.accent)});
+$("customColour").addEventListener("input",e=>{settings.customColour=e.target.value;settings.wallpaper=-1;document.body.style.background=e.target.value;save();renderWallpapers()});
+$("notes").addEventListener("input",e=>{settings.notes=e.target.value;save()});
+$("editFocus").addEventListener("click",()=>{
+ const value=prompt("What's your daily focus?",settings.focus);
+ if(value!==null){settings.focus=value||"Choose a new focus.";settings.focusDone=false;save();apply()}
+});
+$("focusDone").addEventListener("click",()=>{settings.focusDone=!settings.focusDone;save();apply();toast(settings.focusDone?"Focus complete — well done!":"Focus marked incomplete.")});
+
+function showDialog(title,node){$("dialogTitle").textContent=title;$("dialogContent").replaceChildren(node);$("dialogBg").classList.add("open")}
+function closeDialog(){$("dialogBg").classList.remove("open")}
+$("dialogClose").addEventListener("click",closeDialog);
+$("dialogBg").addEventListener("click",e=>{if(e.target===$("dialogBg"))closeDialog()});
+function shortcutDialog(index){
+ const item=index>=0?settings.shortcuts[index]:{name:"",icon:"🔗",url:"https://"};
+ const form=document.createElement("form");
+ function field(labelText,value,placeholder){
+  const label=document.createElement("label");label.style.cssText="display:block;margin-top:12px";label.textContent=labelText;
+  const input=document.createElement("input");input.className="field";input.value=value||"";input.placeholder=placeholder||"";
+  if(labelText!=="Icon")input.required=true;label.append(input);form.append(label);return input;
+ }
+ const name=field("Shortcut name",item.name,"e.g. My website");
+ const icon=field("Icon (emoji)",item.icon,"🔗");
+ const url=field("Website address",item.url,"https://example.com");
+ const actions=document.createElement("div");actions.className="row";actions.style.marginTop="18px";
+ const saveBtn=document.createElement("button");saveBtn.className="btn";saveBtn.textContent=index<0?"Add shortcut":"Save changes";saveBtn.type="submit";actions.append(saveBtn);
+ if(index>=0){
+  const del=document.createElement("button");del.className="btn";del.textContent="Delete";del.type="button";
+  del.addEventListener("click",()=>{if(confirm("Delete this shortcut?")){settings.shortcuts.splice(index,1);save();apply();closeDialog();toast("Shortcut deleted.")}});
+  actions.append(del);
+ }
+ form.append(actions);
+ form.addEventListener("submit",e=>{
+  e.preventDefault();const clean=safeURL(url.value.trim());
+  if(!clean){toast("Enter a valid http:// or https:// address.");return}
+  const next={name:name.value.trim().slice(0,50),icon:icon.value.trim().slice(0,8)||"🔗",url:clean};
+  if(!next.name){toast("Enter a shortcut name.");return}
+  if(index<0)settings.shortcuts.push(next);else settings.shortcuts[index]=next;
+  save();apply();closeDialog();toast("Shortcut saved!");
+ });
+ showDialog(index<0?"Add a shortcut":"Edit shortcut",form);
+}
+$("addShortcut").addEventListener("click",()=>shortcutDialog(-1));$("addBtn").addEventListener("click",()=>shortcutDialog(-1));
+
+function winner(cells){
+ const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+ for(const [a,b,c] of lines)if(cells[a]&&cells[a]===cells[b]&&cells[a]===cells[c])return cells[a];
+ return cells.every(Boolean)?"draw":null;
+}
+function renderGame(){
+ const root=$("gameboard");root.replaceChildren();
+ game.forEach((value,index)=>{
+  const b=document.createElement("button");b.className="cell";b.textContent=value;b.setAttribute("aria-label","Square "+(index+1));
+  b.addEventListener("click",()=>move(index));root.append(b);
+ });
+}
+function move(index){
+ if(gameOver||game[index])return;
+ game[index]="X";let result=winner(game);
+ if(result){finish(result);return}
+ const open=game.map((v,i)=>v?null:i).filter(i=>i!==null);
+ let choice=null;
+ for(const mark of ["O","X"]){
+  for(const i of open){const test=[...game];test[i]=mark;if(winner(test)===mark){choice=i;break}}
+  if(choice!==null)break;
+ }
+ if(choice===null&&game[4]==="")choice=4;
+ if(choice===null)choice=open[Math.floor(Math.random()*open.length)];
+ game[choice]="O";result=winner(game);
+ if(result)finish(result);else{$("gameStatus").textContent="Your turn — X";renderGame()}
+}
+function finish(result){
+ gameOver=true;renderGame();
+ $("gameStatus").textContent=result==="draw"?"It's a draw!":result==="X"?"You win! 🎉":"Computer wins — try again!";
+}
+$("resetGame").addEventListener("click",()=>{game=Array(9).fill("");gameOver=false;$("gameStatus").textContent="Your turn — X";renderGame()});
+
+const tracks=[
+ {name:"Dreams in Colour",artist:"PixelDesk Radio",emoji:"🌈"},
+ {name:"Midnight Pixels",artist:"PixelDesk Radio",emoji:"🌙"},
+ {name:"Electric Daydream",artist:"PixelDesk Radio",emoji:"⚡"},
+ {name:"Cloud Nine",artist:"PixelDesk Radio",emoji:"☁️"}
+];
+function showTrack(){const t=tracks[trackIndex];$("trackName").textContent=t.name;$("trackArtist").textContent=t.artist;$("albumArt").textContent=t.emoji}
+function changeTrack(d){trackIndex=(trackIndex+d+tracks.length)%tracks.length;showTrack()}
+$("prevTrack").addEventListener("click",()=>changeTrack(-1));$("nextTrack").addEventListener("click",()=>changeTrack(1));
+$("playMusic").addEventListener("click",async()=>{
+ const audio=$("audio");if(!audio.src){toast("Load a music file first.");return}
+ if(audio.paused){try{await audio.play()}catch{toast("Couldn't play that audio file.")}}else audio.pause();
+});
+$("audio").addEventListener("play",()=>{$("playMusic").textContent="Ⅱ";$("musicStatus").textContent="Now playing"});
+$("audio").addEventListener("pause",()=>{$("playMusic").textContent="▶";$("musicStatus").textContent="Paused"});
+$("audio").addEventListener("ended",()=>{$("playMusic").textContent="▶";$("musicStatus").textContent="Finished"});
+$("audioFile").addEventListener("change",e=>{
+ const file=e.target.files[0];if(!file)return;
+ const audio=$("audio");
+ if(audio.dataset.url)URL.revokeObjectURL(audio.dataset.url);
+ const url=URL.createObjectURL(file);audio.dataset.url=url;audio.src=url;
+ $("trackName").textContent=file.name.replace(/\.[^.]+$/,"");$("trackArtist").textContent="Your music";$("albumArt").textContent="🎧";
+ audio.play().catch(()=>toast("Press play to start your music."));
+});
+
+$("exportLayout").addEventListener("click",()=>{
+ const blob=new Blob([JSON.stringify(settings,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="PixelDesk-backup.json";a.click();URL.revokeObjectURL(url);
+ toast("Backup exported.");
+});
+$("importLayout").addEventListener("click",()=>$("layoutFile").click());
+$("layoutFile").addEventListener("change",async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{
+  const data=JSON.parse(await file.text());
+  if(!data||typeof data!=="object"||!data.widgets||!Array.isArray(data.shortcuts))throw Error();
+  settings={...clone(defaults),...data,widgets:{...defaults.widgets,...data.widgets}};
+  save();apply();toast("Backup imported.");
+ }catch{toast("That backup file is invalid.")}
+ e.target.value="";
+});
+$("resetLayout").addEventListener("click",()=>{
+ if(!confirm("Reset PixelDesk, including notes and shortcuts?"))return;
+ settings=clone(defaults);save();apply();closePanel();toast("PixelDesk reset.");
+});
+document.querySelectorAll(".dock-item[data-app]").forEach(b=>b.addEventListener("click",()=>{
+ const name=b.dataset.app,target=document.querySelector('[data-widget="'+name+'"]');
+ if(!target)return;
+ if(!settings.widgets[name]){settings.widgets[name]=true;save();apply()}
+ target.scrollIntoView({behavior:"smooth",block:"center"});
+}));
+window.addEventListener("keydown",e=>{
+ if(e.key==="Escape"){closePanel();closeDialog()}
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="s"){e.preventDefault();save();toast("PixelDesk saved.")}
+});
+showTrack();clock();setInterval(clock,1000);renderGame();apply();
+})();
+</script>
+</body>
+</html>
